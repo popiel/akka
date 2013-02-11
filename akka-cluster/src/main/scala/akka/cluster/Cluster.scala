@@ -140,7 +140,10 @@ class Cluster(val system: ExtendedActorSystem) extends Extension {
    */
   private[cluster] val clusterCore: ActorRef = {
     implicit val timeout = system.settings.CreationTimeout
-    Await.result((clusterDaemons ? InternalClusterAction.GetClusterCoreRef).mapTo[ActorRef], timeout.duration)
+    val clusterCore = Await.result((clusterDaemons ? InternalClusterAction.GetClusterCoreRef).mapTo[ActorRef], timeout.duration)
+    if (settings.MetricsEnabled)
+      clusterDaemons ! InternalClusterAction.StartMetrics
+    clusterCore
   }
 
   @volatile
